@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>lazy-imports-handler-behavior test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../../../polymer/polymer.html">
+
+    <link rel="import" href="../lazy-imports-handler-behavior.html">
+  </head>
+  <body>
+    <test-fixture id="lazyImportsHandlerBehavior">
+      <template>
+        <lazy-imports-handler-behavior></lazy-imports-handler-behavior>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('lazy-imports-handler-behavior', () => {
+        let element;
+
+        let createEvent = (groupValue, domainValue) => {
+          return {group: groupValue, domain: domainValue};
+        };
+
+        beforeEach(() => {
+          element = fixture('lazyImportsHandlerBehavior');
+        });
+        describe('lifecycle events', () => {
+          describe('attached', () => {
+            it('should add import-lazy-group event listener to parent node', () => {
+              // let importLazyGroupSpy = sinon.spy();
+              // element._importLazyGroup = importLazyGroupSpy;
+              // expect();
+              // TODO:
+            });
+          });
+          describe('detached', () => {
+            it('should remove import-lazy-group event listener from parent node', () => {
+              // TODO:
+            });
+          });
+        });
+
+        describe('private functions', () => {
+          describe('_importLazyGroup', () => {
+            it('should not handle event without defined group', () => {
+              // TODO:
+            });
+            it('should not handle event without defined domain', () => {
+              // TODO:
+            });
+            it('should not handle event with different domain than that of the handler', () => {
+              // TODO:
+            });
+            it('should attempt to import the group if event domain matches handler domain', () => {
+              // TODO:
+            });
+            it('should stop propagation of the event after it is handled', () => {
+              // TODO:
+            });
+          });
+        });
+
+        describe('dom sub-problems', () => {
+          it('should import once if the same import is on sibling nodes', () => {
+            // TODO:
+          });
+          it('should import once if the same import is on ancestor nodes', () => {
+            // TODO:
+          });
+          it('should import twice if two imports are on ancestor nodes', () => {
+            // TODO:
+          });
+          it('should import on the parent if two siblings have identical lazy import', () => {
+            // TODO:
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
