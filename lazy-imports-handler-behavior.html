@@ -18,6 +18,12 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
           value: () => {
             return {};
           }
+        },
+        __urls: {
+          type: Object,
+          value: () => {
+            return {};
+          }
         }
         // TODO: Create "singleton" array of imported modules?
         // TODO: Register multiple domains
@@ -50,7 +56,12 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
 
           if (!this.wasImported(detail.group)) {
             this.childDomModules(this.parentNode).forEach((childDomModule) => {
+              // Resolution of relative URLs isn't yet done in polymer. Therefore, resolveLinkUrls
+              // is needed as well as the corresponding undo restoreLinkUrls. Once this is resolved
+              // using standards the sandwich functions link resolution and restore can be removed.
+              this.resolveLinkUrls(detail.group, childDomModule);
               this.importLazyGroup(detail.group, childDomModule);
+              this.restoreLinkUrls(detail.group, childDomModule);
             });
             this.markImported(detail.group);
           }
@@ -77,23 +88,40 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
         if (node && node.childNodes) {
           node.querySelectorAll('*').forEach((childNode) => {
             if (childNode.is) {
-              // Modify path on the fly to point to correct directory.
-              // this.lazyImportLinks(childNode).map((lazyImportLink) => {
-              //
-              // });
-              childDomNodes.push(Polymer.DomModule.import(childNode.is));
+              childDomNodes.push(Polymer.DomModule.import(childNode.localName));
             }
           });
         }
         return childDomNodes;
       },
-      //
-      // lazyImportLinks(node, group) {
-      //   let lazyImportLinks = [];
-      //   if (node) {
-      //     lazyImportLinks = node.querySelectorAll('link')
-      //   }
-      // },
+
+      resolveLinkUrls(group, domModuleNode) {
+        if (group && domModuleNode) {
+          this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
+            this.__saveAlteredUrl(linkElement.getAttribute('href'), linkElement.href);
+            linkElement.setAttribute('href', linkElement.href);
+          });
+        }
+      },
+
+      restoreLinkUrls(group, domModuleNode) {
+        if (group && domModuleNode) {
+          this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
+            const previousLinkHref = this.__originalUrl(linkElement.getAttribute('href'));
+            linkElement.setAttribute('href', previousLinkHref);
+          });
+        }
+      },
+
+      modifyLinkUrls(group, domModuleNode, modificationFcn) {
+        return this.lazyLoadLinks(group, domModuleNode).forEach(modificationFcn);
+      },
+
+      lazyLoadLinks(group, domModuleNode) {
+        const groupAttribute = group ? '[group=' + group + ']' : ':not([group])';
+        const query = 'link' + groupAttribute + '[rel=\'lazy-import\'][href]:not([href=\'\'])';
+        return domModuleNode.querySelectorAll(query);
+      },
 
       /** Check if a group has been imported.
        * @param {String} groupKey - The key representing the group.
@@ -110,6 +138,17 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
         if (groupKey) {
           this.__imported[groupKey] = true;
         }
+      },
+
+      __saveAlteredUrl(previousUrl, alteredUrl) {
+        if (previousUrl && alteredUrl) {
+          this.__urls[alteredUrl] = previousUrl;
+        }
+      },
+
+      __originalUrl(alteredUrl) {
+        let thingy = alteredUrl ? this.__urls[alteredUrl] : null;
+        return thingy;
       }
 });
   </script>
