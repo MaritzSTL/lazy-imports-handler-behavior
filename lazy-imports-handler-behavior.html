@@ -84,7 +84,7 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
        * empty array is returned.
        */
       queryDomModulesAll(node) {
-        let childDomNodes = [];
+        const childDomNodes = [];
         if (node && node.childNodes) {
           node.querySelectorAll('*').forEach((childNode) => {
             if (childNode.is) {
@@ -147,8 +147,7 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
       },
 
       __originalUrl(alteredUrl) {
-        let thingy = alteredUrl ? this.__urls[alteredUrl] : null;
-        return thingy;
+        return alteredUrl ? this.__urls[alteredUrl] : null;
       }
 });
   </script>
