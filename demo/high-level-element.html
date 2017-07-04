@@ -4,12 +4,22 @@
 
 <dom-module id='high-level-element'>
   <template>
-    <lazy-imports-handler-behavior domain="hogwarts"></lazy-imports-handler-behavior>
-    <intermediate-element></intermediate-element>
+    <div>
+      Demo
+      <intermediate-element></intermediate-element>
+    </div>
   </template>
   <script>
     Polymer({
-      is: 'high-level-element'
+      is: 'high-level-element',
+      attached() {
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.domain = 'hogwarts';
+        });
+      },
+      behaviors: [
+        mtz.LazyImportsHandlerBehavior
+      ]
     });
   </script>
 </dom-module>

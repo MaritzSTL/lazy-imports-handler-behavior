@@ -7,148 +7,151 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../lazy-imports/lazy-imports-behavior.html">
 
-<dom-module id="lazy-imports-handler-behavior">
-  <script>
-    Polymer({
-      is: 'lazy-imports-handler-behavior',
-      properties: {
-        domain: String,
-        __imported: {
-          type: Object,
-          value: () => {
-            return {};
-          }
-        },
-        __urls: {
-          type: Object,
-          value: () => {
-            return {};
-          }
-        }
-        // TODO: Create "singleton" array of imported modules?
-        // TODO: Register multiple domains
-      },
-      behaviors: [
-        Polymer.LazyImportsBehavior
-      ],
-      ready() {
-        this._importLazyGroup = this._importLazyGroup.bind(this);
-      },
-      attached() {
-        this.parentNode.addEventListener('import-lazy-group', this._importLazyGroup, true);
-      },
-      detached() {
-        this.parentNode.removeEventListener('import-lazy-group', this._importLazyGroup);
-      },
+<script>
 
-      /**
-       * Handle lazy import of group. The event should contain the group to import and the domain.
-       * If the domain doesn't match that of this behavior, the event won't be handled by this
-       * handler.
-       * @protected
-       * @param {CustomEvent} event - An import-lazy-group event containing a specified group and
-       * domain to import.
-       */
-      _importLazyGroup(event) {
-        const {detail} = event;
-        if (detail && detail.group && detail.domain && this.domain === detail.domain) {
-          event.stopImmediatePropagation();
+  window.mtz = window.mtz || {};
 
-          if (!this.wasImported(detail.group)) {
-            this.childDomModules(this.parentNode).forEach((childDomModule) => {
-              // Resolution of relative URLs isn't yet done in polymer. Therefore, resolveLinkUrls
-              // is needed as well as the corresponding undo restoreLinkUrls. Once this is resolved
-              // using standards the sandwich functions link resolution and restore can be removed.
-              this.resolveLinkUrls(detail.group, childDomModule);
-              this.importLazyGroup(detail.group, childDomModule);
-              this.restoreLinkUrls(detail.group, childDomModule);
-            });
-            this.markImported(detail.group);
-          }
+  const LazyImportsHandlerBehaviorImpl = {
+    is: 'lazy-imports-handler-behavior',
+    properties: {
+      domain: String,
+      __imported: {
+        type: Object,
+        value: () => {
+          return {};
         }
       },
-
-      /** Get all child dom-module elements contained under node.
-       * @param {Object} node - The dom node for which all child Dom Module elements should be
-       * gathered.
-       * @return {Array} - Return the child dom module nodes or an empty array if there are none.
-       */
-      childDomModules(node) {
-        return node ? this.queryDomModulesAll(node) : [];
-      },
-
-      /** Query node for all nested dom-module child nodes.
-       * @param {Object} node - The node for which each child will be mapped
-       * to its dom-module, if existent.
-       * @return {Array} - The array of resultant dom-modules elements. If none exist, an
-       * empty array is returned.
-       */
-      queryDomModulesAll(node) {
-        const childDomNodes = [];
-        if (node && node.childNodes) {
-          node.querySelectorAll('*').forEach((childNode) => {
-            if (childNode.is) {
-              childDomNodes.push(Polymer.DomModule.import(childNode.localName));
-            }
-          });
+      __urls: {
+        type: Object,
+        value: () => {
+          return {};
         }
-        return childDomNodes;
-      },
-
-      resolveLinkUrls(group, domModuleNode) {
-        if (group && domModuleNode) {
-          this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
-            this.__saveAlteredUrl(linkElement.getAttribute('href'), linkElement.href);
-            linkElement.setAttribute('href', linkElement.href);
-          });
-        }
-      },
-
-      restoreLinkUrls(group, domModuleNode) {
-        if (group && domModuleNode) {
-          this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
-            const previousLinkHref = this.__originalUrl(linkElement.getAttribute('href'));
-            linkElement.setAttribute('href', previousLinkHref);
-          });
-        }
-      },
-
-      modifyLinkUrls(group, domModuleNode, modificationFcn) {
-        return this.lazyLoadLinks(group, domModuleNode).forEach(modificationFcn);
-      },
-
-      lazyLoadLinks(group, domModuleNode) {
-        const groupAttribute = group ? '[group=' + group + ']' : ':not([group])';
-        const query = 'link' + groupAttribute + '[rel=\'lazy-import\'][href]:not([href=\'\'])';
-        return domModuleNode.querySelectorAll(query);
-      },
-
-      /** Check if a group has been imported.
-       * @param {String} groupKey - The key representing the group.
-       * @return {Boolean} - Returns true if the group is found. Otherwise, false.
-       */
-      wasImported(groupKey) {
-        return (groupKey in this.__imported);
-      },
-
-      /** Mark (memoize) import of group.
-       * @param {String} groupKey - The key representing the group.
-       */
-      markImported(groupKey) {
-        if (groupKey) {
-          this.__imported[groupKey] = true;
-        }
-      },
-
-      __saveAlteredUrl(previousUrl, alteredUrl) {
-        if (previousUrl && alteredUrl) {
-          this.__urls[alteredUrl] = previousUrl;
-        }
-      },
-
-      __originalUrl(alteredUrl) {
-        return alteredUrl ? this.__urls[alteredUrl] : null;
       }
-});
-  </script>
-</dom-module>
+      // TODO: Create "singleton" array of imported modules?
+      // TODO: Register multiple domains
+    },
+    ready() {
+      this._importLazyGroup = this._importLazyGroup.bind(this);
+    },
+    attached() {
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        this.parentNode.addEventListener('import-lazy-group', this._importLazyGroup, true);
+      });
+    },
+    detached() {
+      this.parentNode.removeEventListener('import-lazy-group', this._importLazyGroup);
+    },
+
+    /**
+     * Handle lazy import of group. The event should contain the group to import and the domain.
+     * If the domain doesn't match that of this behavior, the event won't be handled by this
+     * handler.
+     * @protected
+     * @param {CustomEvent} event - An import-lazy-group event containing a specified group and
+     * domain to import.
+     */
+    _importLazyGroup(event) {
+      const {detail} = event;
+      if (detail && detail.group && detail.domain && this.domain === detail.domain) {
+        event.stopImmediatePropagation();
+
+        if (!this.wasImported(detail.group)) {
+          this.childDomModules(this.parentNode).forEach((childDomModule) => {
+            // Resolution of relative URLs isn't yet done in polymer. Therefore, resolveLinkUrls
+            // is needed as well as the corresponding undo restoreLinkUrls. Once this is resolved
+            // using standards the sandwich functions link resolution and restore can be removed.
+            this.resolveLinkUrls(detail.group, childDomModule);
+            this.importLazyGroup(detail.group, childDomModule);
+            this.restoreLinkUrls(detail.group, childDomModule);
+          });
+          this.markImported(detail.group);
+        }
+      }
+    },
+
+    /** Get all child dom-module elements contained under node.
+     * @param {Object} node - The dom node for which all child Dom Module elements should be
+     * gathered.
+     * @return {Array} - Return the child dom module nodes or an empty array if there are none.
+     */
+    childDomModules(node) {
+      return node ? this.queryDomModulesAll(node) : [];
+    },
+
+    /** Query node for all nested dom-module child nodes.
+     * @param {Object} node - The node for which each child will be mapped
+     * to its dom-module, if existent.
+     * @return {Array} - The array of resultant dom-modules elements. If none exist, an
+     * empty array is returned.
+     */
+    queryDomModulesAll(node) {
+      const childDomNodes = [];
+      if (node && node.childNodes) {
+        node.querySelectorAll('*').forEach((childNode) => {
+          if (childNode.is) {
+            childDomNodes.push(Polymer.DomModule.import(childNode.localName));
+          }
+        });
+      }
+      return childDomNodes;
+    },
+
+    resolveLinkUrls(group, domModuleNode) {
+      if (group && domModuleNode) {
+        this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
+          this.__saveAlteredUrl(linkElement.getAttribute('href'), linkElement.href);
+          linkElement.setAttribute('href', linkElement.href);
+        });
+      }
+    },
+
+    restoreLinkUrls(group, domModuleNode) {
+      if (group && domModuleNode) {
+        this.modifyLinkUrls(group, domModuleNode, (linkElement) => {
+          const previousLinkHref = this.__originalUrl(linkElement.getAttribute('href'));
+          linkElement.setAttribute('href', previousLinkHref);
+        });
+      }
+    },
+
+    modifyLinkUrls(group, domModuleNode, modificationFcn) {
+      return this.lazyLoadLinks(group, domModuleNode).forEach(modificationFcn);
+    },
+
+    lazyLoadLinks(group, domModuleNode) {
+      const groupAttribute = group ? '[group=' + group + ']' : ':not([group])';
+      const query = 'link' + groupAttribute + '[rel=\'lazy-import\'][href]:not([href=\'\'])';
+      return domModuleNode.querySelectorAll(query);
+    },
+
+    /** Check if a group has been imported.
+     * @param {String} groupKey - The key representing the group.
+     * @return {Boolean} - Returns true if the group is found. Otherwise, false.
+     */
+    wasImported(groupKey) {
+      return (groupKey in this.__imported);
+    },
+
+    /** Mark (memoize) import of group.
+     * @param {String} groupKey - The key representing the group.
+     */
+    markImported(groupKey) {
+      if (groupKey) {
+        this.__imported[groupKey] = true;
+      }
+    },
+
+    __saveAlteredUrl(previousUrl, alteredUrl) {
+      if (previousUrl && alteredUrl) {
+        this.__urls[alteredUrl] = previousUrl;
+      }
+    },
+
+    __originalUrl(alteredUrl) {
+      return alteredUrl ? this.__urls[alteredUrl] : null;
+    }
+};
+
+mtz.LazyImportsHandlerBehavior = [Polymer.LazyImportsBehavior, LazyImportsHandlerBehaviorImpl];
+
+</script>
