@@ -9,49 +9,115 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../../../polymer/polymer.html">
-
-    <link rel="import" href="../lazy-imports-handler-behavior.html">
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../demo/high-level-element.html">
   </head>
   <body>
-    <test-fixture id="lazyImportsHandlerBehavior">
+
+    <dom-module id='element-using-lazy-import'>
+      <link rel='lazy-import' group='desired-group' href='../demo/demo-element-one.html'>
       <template>
-        <div>
-          <lazy-imports-handler-behavior></lazy-imports-handler-behavior>
-        </div>
+        <nested-element-using-lazy-import></nested-element-using-lazy-import>
+      </template>
+      <script>
+        Polymer({
+          is: 'element-using-lazy-import',
+          behaviors: [
+            mtz.LazyImportsHandlerBehavior
+          ]
+        });
+      </script>
+    </dom-module>
+
+    <dom-module id='nested-element-using-lazy-import'>
+      <link rel='lazy-import' group='desired-group' href='../demo/demo-element-one.html'>
+      <link rel='lazy-import' group='desired-group' href='../demo/demo-element-two.html'>
+      <template>
+        <demo-element-one></demo-element-one>
+        <demo-element-two></demo-element-two>
+      </template>
+      <script>
+        Polymer({
+          is: 'nested-element-using-lazy-import',
+          behaviors: [
+            mtz.LazyImportsHandlerBehavior
+          ],
+          fireEvent(customEvent) {
+            this.dispatchEvent(customEvent);
+          }
+        });
+      </script>
+    </dom-module>
+
+    <test-fixture id="nested">
+      <template>
+        <element-using-lazy-import></element-using-lazy-import>
       </template>
     </test-fixture>
 
     <script>
       describe('lazy-imports-handler-behavior', () => {
-        let element;
-        let parentNode;
+        let childElement, element, parent;
 
         const createEvent = (groupValue, domainValue, optionalKeyValues = {}) => {
-          let newEvent = {
-            detail: {group: groupValue, domain: domainValue}
+          let eventOptions = {
+            detail: {group: groupValue, domain: domainValue},
+            bubbles: true,
+            composed: true,
+            cancelable: true
           };
-          if (optionalKeyValues) newEvent = Object.assign(newEvent, optionalKeyValues);
-          return newEvent;
+          if (optionalKeyValues) eventOptions = Object.assign(eventOptions, optionalKeyValues);
+          return new CustomEvent('import-lazy-group', eventOptions);
         };
 
-        beforeEach(() => {
-          parentNode = fixture('lazyImportsHandlerBehavior');
-          element = parentNode.querySelector('lazy-imports-handler-behavior');
+        const initElementFields = (element, options = {domain: 'accepted-domain'}) => {
+          for(const field in options) {
+            if (field) {
+              element[field] = options[field];
+            }
+          }
+        };
+
+        beforeEach((done) => {
+          element = fixture('nested');
+          initElementFields(element);
+          childElement = element.querySelector('nested-element-using-lazy-import');
+          initElementFields(childElement);
+          parent = element.parentNode;
+          flush(done);
         });
 
         describe('lifecycle events', () => {
-          describe('attached', () => {
-            it('should add import-lazy-group event listener to parent node', () => {
-              // let importLazyGroupSpy = sinon.spy();
-              // element._importLazyGroup = importLazyGroupSpy;
-              // expect();
-              // TODO:
+          beforeEach((done) => {
+            // Force attachment event
+            parent.removeChild(element);
+            element._importLazyGroup = sinon.spy(element, '_importLazyGroup');
+            parent.appendChild(element);
+            flush(done);
+          });
+
+          describe('attached()', () => {
+            it('should add import-lazy-group event listener to parent node', (done) => {
+              const event = createEvent('desired-group', 'accepted-domain');
+              flush(() => {
+                const childElement = element.querySelector('nested-element-using-lazy-import');
+                childElement.fireEvent(event);
+                expect(element._importLazyGroup).calledWithMatch(event);
+                done();
+              });
             });
           });
-          describe('detached', () => {
-            it('should remove import-lazy-group event listener from parent node', () => {
-              // TODO:
+
+          describe('detached()', () => {
+            it('should remove import-lazy-group event listener from parent node', (done) => {
+              const event = createEvent('desired-group', 'accepted-domain');
+              const childElement = element.querySelector('nested-element-using-lazy-import');
+              parent.removeChild(element);
+              flush(() => {
+                childElement.fireEvent(event);
+                expect(element._importLazyGroup.called).to.equal(false);
+                done();
+              });
             });
           });
         });
@@ -60,57 +126,51 @@
           describe('_importLazyGroup', () => {
             it('should not handle event without defined group', () => {
               const event = createEvent(null, "accepted-domain");
-              const stopImmediatePropagationSpy = sinon.spy();
-              element.domain = "accepted-domain";
-              event.stopImmediatePropagation = stopImmediatePropagationSpy;
+              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              sinon.assert.notCalled(stopImmediatePropagationSpy);
             });
             it('should not handle event without defined domain', () => {
-              const event = createEvent('group', null);
-              const stopImmediatePropagationSpy = sinon.spy();
-              element.domain = 'accepted-domain';
-              event.stopImmediatePropagation = stopImmediatePropagationSpy;
+              const event = createEvent('desired-group', null);
+              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              sinon.assert.notCalled(stopImmediatePropagationSpy);
             });
             it('should not handle event with different domain than that of the handler', () => {
-              const event = createEvent('group', 'some-different-domain');
-              const stopImmediatePropagationSpy = sinon.spy();
-              element.domain = 'accepted-domain';
-              event.stopImmediatePropagation = stopImmediatePropagationSpy;
+              const event = createEvent('desired-group', 'some-different-domain');
+              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              sinon.assert.notCalled(stopImmediatePropagationSpy);
             });
             it('should attempt to import the group if event domain matches handler domain', () => {
-              const event = createEvent('group', 'accepted-domain');
-              const stopImmediatePropagationSpy = sinon.spy();
-              element.domain = 'accepted-domain';
-              event.stopImmediatePropagation = stopImmediatePropagationSpy;
+              const event = createEvent('desired-group', 'accepted-domain');
+              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.calledOnce(event.stopImmediatePropagation);
+              sinon.assert.calledOnce(stopImmediatePropagationSpy);
             });
-            it('should stop propagation of the event after it is handled', () => {
-              // TODO:
+            it('should stop propagation of the event', () => {
+              const event = createEvent('desired-group', 'accepted-domain');
+              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              element._importLazyGroup(event);
+              sinon.assert.calledOnce(stopImmediatePropagationSpy);
             });
             it('should only import a lazy group the first time it is imported', () => {
-              // TODO:
+              const event = createEvent('desired-group', 'accepted-domain');
+              const importLazyGroupSpy = sinon.spy(element, 'importLazyGroup');
+              element._importLazyGroup(event);
+              element._importLazyGroup(event);
+              sinon.assert.calledOnce(importLazyGroupSpy);
             });
           });
         });
 
-        describe('dom sub-problems', () => {
-          it('should import once if the same import is on sibling nodes', () => {
-            // TODO:
-          });
-          it('should import once if the same import is on ancestor nodes', () => {
-            // TODO:
-          });
-          it('should import twice if two imports are on ancestor nodes', () => {
-            // TODO:
-          });
-          it('should import on the parent if two siblings have identical lazy import', () => {
-            // TODO:
+        describe('dom node integration tests', () => {
+          it('should import once if the same import is on ancestor nodes', (done) => {
+            const event = createEvent('desired-group', 'accepted-domain');
+            const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+            childElement.fireEvent(event);
+            sinon.assert.calledOnce(stopImmediatePropagationSpy);
+            flush(done)
           });
         });
       });
