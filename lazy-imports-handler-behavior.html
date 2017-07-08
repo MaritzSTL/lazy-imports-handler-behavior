@@ -14,53 +14,26 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
   const LazyImportsHandlerBehaviorImpl = {
     is: 'lazy-imports-handler-behavior',
     properties: {
-      domain: String,
-      __imported: {
-        type: Object,
-        value: () => {
-          return {};
-        }
-      }
+      domain: String
     },
     ready() {
       this._importLazyGroup = this._importLazyGroup.bind(this);
     },
     attached() {
-      Polymer.RenderStatus.afterNextRender(this, () => {
-        this.addEventListener('import-lazy-group', this._importLazyGroup, true);
-      });
+      this.addEventListener('import-lazy-group', this._importLazyGroup, true);
     },
     detached() {
-      this.removeEventListener('import-lazy-group', this._importLazyGroup);
+      this.removeEventListener('import-lazy-group', this._importLazyGroup, true);
     },
 
     _importLazyGroup(event) {
+      console.log('import -> this', this);
       const {detail} = event;
       if (detail && detail.group && detail.domain && this.domain === detail.domain) {
         event.stopImmediatePropagation();
-        if (!this.wasImported(detail.group)) {
-          this.importLazyGroup(detail.group);
-          this.markImported(detail.group);
-        }
+        this.importLazyGroup(detail.group);
       }
-    },
-
-    /** Check if a group has been imported.
-     * @param {String} groupKey - The key representing the group.
-     * @return {Boolean} - Returns true if the group is found. Otherwise, false.
-     */
-    wasImported(groupKey) {
-      return (groupKey in this.__imported);
-    },
-
-    /** Mark (memoize) import of group.
-     * @param {String} groupKey - The key representing the group.
-     */
-    markImported(groupKey) {
-      if (groupKey) {
-        this.__imported[groupKey] = true;
-      }
-    },
+    }
 };
 
 mtz.LazyImportsHandlerBehavior = [Polymer.LazyImportsBehavior, LazyImportsHandlerBehaviorImpl];

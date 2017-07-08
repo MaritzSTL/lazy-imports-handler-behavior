@@ -1,0 +1,20 @@
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../lazy-imports-handler-behavior.html">
+
+<dom-module id='nested-element-using-lazy-import'>
+  <link rel='lazy-import' group='desired-group' href='../demo/demo-element-one.html'>
+  <link rel='lazy-import' group='desired-group' href='../demo/demo-element-two.html'>
+  <template>
+    <demo-element-one></demo-element-one>
+    <demo-element-two></demo-element-two>
+  </template>
+  <script>
+    Polymer({
+      is: 'nested-element-using-lazy-import',
+      behaviors: [
+        mtz.LazyImportsHandlerBehavior
+      ]
+    });
+  </script>
+</dom-module>
