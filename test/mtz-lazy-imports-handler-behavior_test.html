@@ -68,7 +68,7 @@
             // FIXME: Issue with shadow DOM experienced in this test so dispatch is done
             // on element itself rather than child. This should really be
             // child.dispatchEvent(...) but shadow dom is failing to bubble the event.
-            // author: Hayden McParlane
+            // author: Hayden McParlane, JIRA ticket: SAL2-1598
             element.dispatchEvent(event);
             expect(element._importLazyGroup).calledWithMatch(event);
           });
