@@ -6,8 +6,6 @@
 <dom-module id="magical-button">
   <template>
     <paper-button raised on-click="buttonPressed">Magical Button</paper-button>
-    <demo-element-one></demo-element-one>
-    <demo-element-two></demo-element-two>
   </template>
   <script>
 
@@ -17,8 +15,7 @@
         const options = {
           detail: {group: 'gryffindor', domain: 'hogwarts'},
           bubbles: true,
-          composed: true,
-          cancelable: true
+          composed: true
         };
         const lazyImportGroupEvent = new CustomEvent('import-lazy-group', options);
         this.dispatchEvent(lazyImportGroupEvent);
