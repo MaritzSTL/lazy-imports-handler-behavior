@@ -11,12 +11,10 @@
     Polymer({
       is: 'magical-button',
       buttonPressed() {
-        const options = {
+        this.dispatchEvent(new CustomEvent('import-lazy-group', {
           detail: {group: 'gryffindor', domain: 'hogwarts'},
           composed: true
-        };
-        const lazyImportGroupEvent = new CustomEvent('import-lazy-group', options);
-        this.dispatchEvent(lazyImportGroupEvent);
+        }));
       }
     });
   </script>

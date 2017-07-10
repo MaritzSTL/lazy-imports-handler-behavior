@@ -37,7 +37,7 @@
      */
     _importLazyGroup(event) {
       const {detail = {}} = event;
-      if (detail && detail.group && this.domain !== null && this.domain === detail.domain) {
+      if (detail && detail.group && this.domain === detail.domain) {
         event.stopImmediatePropagation();
         this.importLazyGroup(detail.group);
       }
