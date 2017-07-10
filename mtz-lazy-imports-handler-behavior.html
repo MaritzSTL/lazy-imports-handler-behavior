@@ -1,12 +1,3 @@
-<!--
-`mtz-lazy-imports-handler-behavior`
-Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
-behavior to attempt to import a lazy-group within the provided domain, if it is found then it will
-stop the event propagation. Listens for events on the use-capture event cycle.
-
-@polymerBehavior mtz.AjaxInterceptorBehavior
-@demo demo/index.html
--->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../lazy-imports/lazy-imports-behavior.html">
 
@@ -14,6 +5,15 @@ stop the event propagation. Listens for events on the use-capture event cycle.
 
   window.mtz = window.mtz || {};
 
+/**
+ * `mtz-lazy-imports-handler-behavior`
+ *  Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
+ *  behavior to attempt to import a lazy-group within the provided domain. If it is found then it will
+ *  stop the event propagation. Listens for events on the use-capture event cycle.
+ *
+ * @polymerBehavior mtz.LazyImportsHandlerBehavior
+ * @demo demo/index.html
+ */
   const LazyImportsHandlerBehaviorImpl = {
     properties: {
       /* The domain dictating whether a group can be lazily loaded by this behavior instance */
