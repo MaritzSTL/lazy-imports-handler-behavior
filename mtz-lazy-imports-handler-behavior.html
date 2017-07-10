@@ -1,7 +1,10 @@
 <!--
-`lazy-imports-handler-behavior`
-Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this behavior to attempt to import a lazy-group within the provided domain, if it is found then it will stop the event propagation. Listens for events on the use-capture event cycle.
+`mtz-lazy-imports-handler-behavior`
+Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
+behavior to attempt to import a lazy-group within the provided domain, if it is found then it will
+stop the event propagation. Listens for events on the use-capture event cycle.
 
+@polymerBehavior mtz.AjaxInterceptorBehavior
 @demo demo/index.html
 -->
 <link rel="import" href="../polymer/polymer.html">
@@ -12,8 +15,8 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
   window.mtz = window.mtz || {};
 
   const LazyImportsHandlerBehaviorImpl = {
-    is: 'lazy-imports-handler-behavior',
     properties: {
+      /* The domain dictating whether a group can be lazily loaded by this behavior instance */
       domain: String
     },
     ready() {
@@ -25,9 +28,12 @@ Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an ins
     detached() {
       this.removeEventListener('import-lazy-group', this._importLazyGroup, true);
     },
-
+    /** Import lazy group provided that the domain of the group matches the registered domain
+     *  of this behavior.
+     * @param {CustomEvent} event - The event being processed. This event should include a domain
+     * and a group specified in the event.detail property.
+     */
     _importLazyGroup(event) {
-      console.log('import -> this', this);
       const {detail} = event;
       if (detail && detail.group && detail.domain && this.domain === detail.domain) {
         event.stopImmediatePropagation();

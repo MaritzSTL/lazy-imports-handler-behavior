@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="./intermediate-element.html">
-<link rel="import" href="../lazy-imports-handler-behavior.html">
+<link rel="import" href="../mtz-lazy-imports-handler-behavior.html">
 
 <dom-module id='high-level-element'>
   <link rel='lazy-import' group='gryffindor' href='demo-element-one.html'>
@@ -14,9 +14,7 @@
     Polymer({
       is: 'high-level-element',
       attached() {
-        Polymer.RenderStatus.afterNextRender(this, () => {
-          this.domain = 'hogwarts';
-        });
+        this.domain = 'hogwarts';
       },
       behaviors: [
         mtz.LazyImportsHandlerBehavior

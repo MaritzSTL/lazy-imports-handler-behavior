@@ -1,7 +1,7 @@
 {
-  "name": "lazy-imports-handler-behavior",
+  "name": "mtz-lazy-imports-handler-behavior",
   "description": "Handler behavior for lazy imports",
-  "main": "lazy-imports-handler-behavior.html",
+  "main": "mtz-lazy-imports-handler-behavior.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.9 || ^2.0",
     "paper-button": "PolymerElements/paper-button#^2.0.0",

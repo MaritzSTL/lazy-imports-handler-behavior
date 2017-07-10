@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>lazy-imports-handler-behavior test</title>
+    <title>mtz-lazy-imports-handler-behavior test</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
@@ -22,7 +22,7 @@
     </test-fixture>
 
     <script>
-      describe('lazy-imports-handler-behavior', () => {
+      describe('mtz-lazy-imports-handler-behavior', () => {
         let child, element, parent;
 
         function createEvent(groupValue, domainValue, optionalKeyValues = {}) {
@@ -59,20 +59,19 @@
           beforeEach((done) => {
             // Force attachment event
             parent.removeChild(element);
-            sinon.spy(element, '_importLazyGroup');
-            console.log('beforeEach -> element', element);
-            parent.appendChild(element);
-            flush(done);
+            flush(() => {
+              element._importLazyGroup = sinon.spy();
+              parent.appendChild(element);
+              flush(done);
+            });
           });
 
           it('should add import-lazy-group event listener', () => {
             // FIXME: Issue with shadow DOM experienced in this test so dispatch is done
             // on element itself rather than child. This should really be
             // child.dispatchEvent(...) but shadow dom is failing to bubble the event.
-            console.log('it before -> element', element);
             element.dispatchEvent(event);
-            console.log('it after -> element', element);
-            expect(element._importLazyGroup.called).to.equal(true);
+            expect(element._importLazyGroup).calledWithMatch(event);
           });
         });
 
@@ -133,13 +132,24 @@
         });
 
         describe('dom node integration tests', () => {
+          const event = createEvent('desired-group', 'accepted-domain');
+
+          beforeEach((done) => {
+            parent.removeChild(element);
+            flush(() => {
+              sinon.spy(element, '_importLazyGroup');
+              sinon.spy(child, '_importLazyGroup');
+              parent.appendChild(element);
+              flush(done);
+            });
+          });
+
           it('should import once if the same import is on ancestor nodes', () => {
-            // TODO: Modify such that verification is done that element actually fires
-            // and that child doesn't fire.
-            const event = createEvent('desired-group', 'accepted-domain');
-            const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+            sinon.spy(event, 'stopImmediatePropagation');
             child.dispatchEvent(event);
-            sinon.assert.calledOnce(stopImmediatePropagationSpy);
+            sinon.assert.calledOnce(event.stopImmediatePropagation);
+            expect(child._importLazyGroup.called).to.equal(false);
+            expect(element._importLazyGroup).calledWithMatch(event);
           });
         });
       });
