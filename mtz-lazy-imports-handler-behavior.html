@@ -28,14 +28,16 @@
     detached() {
       this.removeEventListener('import-lazy-group', this._importLazyGroup, true);
     },
+
     /** Import lazy group provided that the domain of the group matches the registered domain
      *  of this behavior.
+     * @protected
      * @param {CustomEvent} event - The event being processed. This event should include a domain
      * and a group specified in the event.detail property.
      */
     _importLazyGroup(event) {
-      const {detail} = event;
-      if (detail && detail.group && detail.domain && this.domain === detail.domain) {
+      const {detail = {}} = event;
+      if (detail && detail.group && this.domain !== null && this.domain === detail.domain) {
         event.stopImmediatePropagation();
         this.importLazyGroup(detail.group);
       }

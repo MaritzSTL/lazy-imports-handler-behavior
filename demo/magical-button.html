@@ -1,11 +1,8 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-styles/color.html">
-<link rel="import" href="../../lazy-imports/lazy-imports-behavior.html">
 
 <dom-module id="magical-button">
   <template>
-    <paper-button raised on-click="buttonPressed">Magical Button</paper-button>
+    <button raised on-click="buttonPressed">Magical Button</button>
     <demo-element-one></demo-element-one>
     <demo-element-two></demo-element-two>
   </template>
@@ -16,7 +13,6 @@
       buttonPressed() {
         const options = {
           detail: {group: 'gryffindor', domain: 'hogwarts'},
-          bubbles: true,
           composed: true
         };
         const lazyImportGroupEvent = new CustomEvent('import-lazy-group', options);

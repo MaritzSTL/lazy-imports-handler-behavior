@@ -11,7 +11,6 @@
 
     <link rel="import" href="../../polymer/polymer.html">
     <link rel="import" href="element-using-lazy-import.html">
-    <link rel="import" href="nested-element-using-lazy-import.html">
   </head>
   <body>
 
@@ -28,7 +27,6 @@
         function createEvent(groupValue, domainValue, optionalKeyValues = {}) {
           let eventOptions = {
             detail: {group: groupValue, domain: domainValue},
-            bubbles: true,
             composed: true
           };
           if (optionalKeyValues) eventOptions = Object.assign(eventOptions, optionalKeyValues);
@@ -70,6 +68,7 @@
             // FIXME: Issue with shadow DOM experienced in this test so dispatch is done
             // on element itself rather than child. This should really be
             // child.dispatchEvent(...) but shadow dom is failing to bubble the event.
+            // author: Hayden McParlane
             element.dispatchEvent(event);
             expect(element._importLazyGroup).calledWithMatch(event);
           });
@@ -100,33 +99,45 @@
           describe('_importLazyGroup', () => {
             it('should not handle event without defined group', () => {
               const event = createEvent(null, 'accepted-domain');
-              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(stopImmediatePropagationSpy);
+              sinon.assert.notCalled(event.stopImmediatePropagation);
             });
-            it('should not handle event without defined domain', () => {
+            it('should not handle event if domain is null', () => {
               const event = createEvent('desired-group', null);
-              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(stopImmediatePropagationSpy);
+              sinon.assert.notCalled(event.stopImmediatePropagation);
             });
             it('should not handle event with different domain than that of the handler', () => {
               const event = createEvent('desired-group', 'some-different-domain');
-              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.notCalled(stopImmediatePropagationSpy);
+              sinon.assert.notCalled(event.stopImmediatePropagation);
+            });
+            it('should handle event if domain is undefined', () => {
+              const event = createEvent('desired-group', undefined);
+              sinon.spy(event, 'stopImmediatePropagation');
+              element._importLazyGroup(event);
+              sinon.assert.notCalled(event.stopImmediatePropagation);
+            });
+            it('should handle event if domain is an empty string', () => {
+              const event = createEvent('desired-group', '');
+              sinon.spy(event, 'stopImmediatePropagation');
+              element._importLazyGroup(event);
+              sinon.assert.notCalled(event.stopImmediatePropagation);
             });
             it('should attempt to import the group if event domain matches handler domain', () => {
               const event = createEvent('desired-group', 'accepted-domain');
-              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.calledOnce(stopImmediatePropagationSpy);
+              sinon.assert.calledOnce(event.stopImmediatePropagation);
             });
             it('should stop propagation of the event', () => {
               const event = createEvent('desired-group', 'accepted-domain');
-              const stopImmediatePropagationSpy = sinon.spy(event, 'stopImmediatePropagation');
+              sinon.spy(event, 'stopImmediatePropagation');
               element._importLazyGroup(event);
-              sinon.assert.calledOnce(stopImmediatePropagationSpy);
+              sinon.assert.calledOnce(event.stopImmediatePropagation);
             });
           });
         });
