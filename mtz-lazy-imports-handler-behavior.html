@@ -23,7 +23,7 @@
       },
       groups: {
         type: Set,
-        value: () => {
+        value() {
           return new Set();
         }
       }
@@ -32,7 +32,7 @@
       this._importLazyGroup = this._importLazyGroup.bind(this);
 
       // Gather all groups this element lazily imports
-      const thisDomModule = Polymer.DomModule.import(this.is);
+      const thisDomModule = Polymer.DomModule.import(this.localName);
       let groups = new Set();
       if (thisDomModule) {
         const links = Array.from(thisDomModule.
@@ -59,7 +59,7 @@
      */
     _importLazyGroup(event) {
       const {detail = {}} = event;
-      if (detail && this.groups.has(detail.group) && this.isValidDomain(detail.domain)) {
+      if (detail && this.groups.has(detail.group) && this._isValidDomain(detail.domain)) {
         event.stopImmediatePropagation();
         this.importLazyGroup(detail.group);
       }
@@ -71,7 +71,7 @@
      * @return {Boolean} - Returns true if the domain is equavalent to that registered and
      * is not null. Otherwise, return false.
      */
-    isValidDomain(domain) {
+    _isValidDomain(domain) {
       return domain !== null && domain === this.domain;
     }
 };
