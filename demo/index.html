@@ -11,7 +11,7 @@
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
 
-    <link rel="import" href="high-level-element.html">
+    <link rel="import" href="../mtz-lazy-imports-handler-behavior.html">
 
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
@@ -21,9 +21,59 @@
       <h3>Basic mtz-lazy-imports-handler-behavior demo</h3>
       <demo-snippet>
         <template>
-          <high-level-element></high-level-element>
+          <hogwarts-castle></hogwarts-castle>
+
+          <dom-module id="hogwarts-castle">
+            <link rel="lazy-import" group="gryffindor" href="demo-element-one.html">
+            <template>
+              <magical-button></magical-button>
+            </template>
+            <script>
+              Polymer({
+                is: 'hogwarts-castle',
+                behaviors: [
+                  // Register the behavior
+                  mtz.LazyImportsHandlerBehavior
+                ],
+                ready() {
+                  // Register your desired domain
+                  this.domain = 'hogwarts';
+                }
+              });
+            </script>
+          </dom-module>
+
+          <dom-module id="magical-button">
+            <link rel="lazy-import" group="gryffindor" href="demo-element-two.html">
+            <template>
+              <button raised on-click="buttonPressed">Magical Button</button>
+              <!-- <demo-element-one> will show because the event is processed by first
+              element that handles the provided group with a matching domain. -->
+              <demo-element-one></demo-element-one>
+
+              <!-- This will not show because event is captured by parent. Even though a
+              lazy import is provided with a matching domain and group, the parent takes
+              precedence. -->
+              <demo-element-two></demo-element-two>
+            </template>
+            <script>
+              Polymer({
+                is: 'magical-button',
+                behaviors: [
+                  mtz.LazyImportsHandlerBehavior
+                ],
+                buttonPressed() {
+                  this.dispatchEvent(new CustomEvent('import-lazy-group', {
+                    detail: {group: 'gryffindor', domain: 'hogwarts'},
+                    composed: true
+                  }));
+                }
+              });
+            </script>
+          </dom-module>
         </template>
       </demo-snippet>
+
     </div>
   </body>
 </html>

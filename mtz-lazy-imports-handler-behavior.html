@@ -17,10 +17,31 @@
   const LazyImportsHandlerBehaviorImpl = {
     properties: {
       /* The domain dictating whether a group can be lazily loaded by this behavior instance */
-      domain: String
+      domain: {
+        type: String,
+        value: ''
+      },
+      groups: {
+        type: Set,
+        value: () => {
+          return new Set();
+        }
+      }
     },
     ready() {
       this._importLazyGroup = this._importLazyGroup.bind(this);
+
+      // Gather all groups this element lazily imports
+      const thisDomModule = Polymer.DomModule.import(this.is);
+      let groups = new Set();
+      if (thisDomModule) {
+        const links = Array.from(thisDomModule.
+          querySelectorAll(`link[rel=\'lazy-import\'][href]:not([href=\'\']`));
+        groups = new Set(links.map((link) => {
+          return link.getAttribute('group') || '';
+        }));
+      }
+      this.groups = groups;
     },
     attached() {
       this.addEventListener('import-lazy-group', this._importLazyGroup, true);
@@ -29,7 +50,8 @@
       this.removeEventListener('import-lazy-group', this._importLazyGroup, true);
     },
 
-    /** Import lazy group provided that the domain of the group matches the registered domain
+    /**
+     * Import lazy group provided that the domain of the group matches the registered domain
      *  of this behavior.
      * @protected
      * @param {CustomEvent} event - The event being processed. This event should include a domain
@@ -37,10 +59,20 @@
      */
     _importLazyGroup(event) {
       const {detail = {}} = event;
-      if (detail.group && this.domain === detail.domain) {
+      if (detail && this.groups.has(detail.group) && this.isValidDomain(detail.domain)) {
         event.stopImmediatePropagation();
         this.importLazyGroup(detail.group);
       }
+    },
+
+    /**
+     * Check if a given domain is valid.
+     * @param {String} domain - The domain for which a validity check is being done.
+     * @return {Boolean} - Returns true if the domain is equavalent to that registered and
+     * is not null. Otherwise, return false.
+     */
+    isValidDomain(domain) {
+      return domain !== null && domain === this.domain;
     }
 };
 

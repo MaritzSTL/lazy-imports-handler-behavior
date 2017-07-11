@@ -10,13 +10,13 @@
     <script src="../../web-component-tester/browser.js"></script>
 
     <link rel="import" href="../../polymer/polymer.html">
-    <link rel="import" href="element-using-lazy-import.html">
+    <link rel="import" href="../test/high-level-element.html">
   </head>
   <body>
 
     <test-fixture id="elementWithChild">
       <template>
-        <element-using-lazy-import></element-using-lazy-import>
+        <high-level-element></high-level-element>
       </template>
     </test-fixture>
 
@@ -33,7 +33,7 @@
           return new CustomEvent('import-lazy-group', eventOptions);
         }
 
-        function initElementFields(element, options = {domain: 'accepted-domain'}) {
+        function initElementFields(element, options = {domain: 'hogwarts'}) {
           if (element) {
             for(const field in options) {
               if (field) {
@@ -47,12 +47,18 @@
           element = fixture('elementWithChild');
           parent = element.parentNode;
           initElementFields(element);
-          child = Polymer.dom(element.root).querySelector('nested-element-using-lazy-import');
+          child = Polymer.dom(element.root).querySelector('intermediate-element');
           initElementFields(child);
         });
 
+        describe('ready()', () => {
+          it('should locate dom module links and add them to groups property', () => {
+            expect(element.groups.has('gryffindor')).to.equal(true);
+          });
+        });
+
         describe('attached()', () => {
-          const event = createEvent('desired-group', 'accepted-domain');
+          const event = createEvent('gryffindor', 'hogwarts');
 
           beforeEach((done) => {
             // Force attachment event
@@ -70,12 +76,12 @@
             // child.dispatchEvent(...) but shadow dom is failing to bubble the event.
             // author: Hayden McParlane, JIRA ticket: SAL2-1598
             element.dispatchEvent(event);
-            expect(element._importLazyGroup).calledWithMatch(event);
+            expect(element._importLazyGroup).to.be.calledWithMatch(event);
           });
         });
 
         describe('detached()', () => {
-          const event = createEvent('desired-group', 'accepted-domain');
+          const event = createEvent('gryffindor', 'hogwarts');
 
           beforeEach((done) => {
             // Force attachment event
@@ -89,7 +95,7 @@
             parent.removeChild(element);
             flush(() => {
               child.dispatchEvent(event);
-              expect(element._importLazyGroup.called).to.equal(false);
+              expect(element._importLazyGroup).not.to.be.called;
               done();
             });
           });
@@ -97,53 +103,67 @@
 
         describe('private functions', () => {
           describe('_importLazyGroup', () => {
-            it('should not handle event without defined group', () => {
-              const event = createEvent(null, 'accepted-domain');
-              sinon.spy(event, 'stopImmediatePropagation');
+            it('should ignore events triggered with empty detail', () => {
+              const event = createEvent(null, null, {
+                detail: {}
+              });
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).not.to.be.called;
+            });
+            it('should only handle registered groups within groups property', () => {
+              const event1 = createEvent('not-registered-group', 'hogwarts');
+              const event2 = createEvent('gryffindor', 'hogwarts');
+              event1.stopImmediatePropagation = sinon.spy();
+              event2.stopImmediatePropagation = sinon.spy();
+              element._importLazyGroup(event1);
+              element._importLazyGroup(event2);
+              expect(event1.stopImmediatePropagation).not.to.be.called;
+              expect(event2.stopImmediatePropagation).to.be.called;
             });
             it('should not handle event if domain is null', () => {
-              const event = createEvent('desired-group', null);
-              sinon.spy(event, 'stopImmediatePropagation');
+              const event = createEvent('gryffindor', null);
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).not.to.be.called;
             });
             it('should not handle event with different domain than that of the handler', () => {
-              const event = createEvent('desired-group', 'some-different-domain');
-              sinon.spy(event, 'stopImmediatePropagation');
+              const event = createEvent('gryffindor', 'some-other-magical-school');
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).not.to.be.called;
             });
-            it('should handle event if domain is undefined', () => {
-              const event = createEvent('desired-group', undefined);
-              sinon.spy(event, 'stopImmediatePropagation');
+            it('should consider domain of undefined as default', () => {
+              const event = createEvent('gryffindor', undefined);
+              element.domain = undefined;
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).to.be.called;
             });
             it('should handle event if domain is an empty string', () => {
-              const event = createEvent('desired-group', '');
-              sinon.spy(event, 'stopImmediatePropagation');
+              const event = createEvent('gryffindor', '');
+              element.domain = '';
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.notCalled(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).to.be.called;
             });
             it('should attempt to import the group if event domain matches handler domain', () => {
-              const event = createEvent('desired-group', 'accepted-domain');
-              sinon.spy(event, 'stopImmediatePropagation');
+              const event = createEvent('gryffindor', 'hogwarts');
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.calledOnce(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).to.be.called;
             });
             it('should stop propagation of the event', () => {
-              const event = createEvent('desired-group', 'accepted-domain');
-              sinon.spy(event, 'stopImmediatePropagation');
+              const event = createEvent('gryffindor', 'hogwarts');
+              event.stopImmediatePropagation = sinon.spy();
               element._importLazyGroup(event);
-              sinon.assert.calledOnce(event.stopImmediatePropagation);
+              expect(event.stopImmediatePropagation).to.be.called;
             });
           });
         });
 
         describe('dom node integration tests', () => {
-          const event = createEvent('desired-group', 'accepted-domain');
+          const event = createEvent('gryffindor', 'hogwarts');
 
           beforeEach((done) => {
             parent.removeChild(element);
@@ -158,9 +178,9 @@
           it('should import once if the same import is on ancestor nodes', () => {
             sinon.spy(event, 'stopImmediatePropagation');
             child.dispatchEvent(event);
-            sinon.assert.calledOnce(event.stopImmediatePropagation);
-            expect(child._importLazyGroup.called).to.equal(false);
-            expect(element._importLazyGroup).calledWithMatch(event);
+            expect(event.stopImmediatePropagation).to.be.called;
+            expect(child._importLazyGroup).not.to.be.called;
+            expect(element._importLazyGroup).to.be.calledWithMatch(event);
           });
         });
       });
