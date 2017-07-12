@@ -17,16 +17,10 @@
   const LazyImportsHandlerBehaviorImpl = {
     properties: {
       /* The domain dictating whether a group can be lazily loaded by this behavior instance */
-      domain: {
-        type: String,
-        value: ''
-      },
-      groups: {
-        type: Set,
-        value() {
-          return new Set();
-        }
-      }
+      domain: String,
+
+      /* The groups handled by this handler */
+      __groups: Set
     },
     ready() {
       this._importLazyGroup = this._importLazyGroup.bind(this);
@@ -41,7 +35,7 @@
           return link.getAttribute('group') || '';
         }));
       }
-      this.groups = groups;
+      this.__groups = groups;
     },
     attached() {
       this.addEventListener('import-lazy-group', this._importLazyGroup, true);
@@ -59,20 +53,10 @@
      */
     _importLazyGroup(event) {
       const {detail = {}} = event;
-      if (detail && this.groups.has(detail.group) && this._isValidDomain(detail.domain)) {
+      if (detail && this.__groups.has(detail.group) && detail.domain === this.domain) {
         event.stopImmediatePropagation();
         this.importLazyGroup(detail.group);
       }
-    },
-
-    /**
-     * Check if a given domain is valid.
-     * @param {String} domain - The domain for which a validity check is being done.
-     * @return {Boolean} - Returns true if the domain is equavalent to that registered and
-     * is not null. Otherwise, return false.
-     */
-    _isValidDomain(domain) {
-      return domain === this.domain;
     }
 };
 

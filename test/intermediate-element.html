@@ -10,6 +10,12 @@
   <script>
     Polymer({
       is: 'intermediate-element',
+      properties: {
+        domain: {
+          type: String,
+          value: 'hogwarts'
+        }
+      },
       behaviors: [
         mtz.LazyImportsHandlerBehavior
       ]

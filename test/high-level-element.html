@@ -3,8 +3,9 @@
 <link rel="import" href="../mtz-lazy-imports-handler-behavior.html">
 
 <dom-module id="high-level-element">
-  <link rel="lazy-import" group="gryffindor" href="demo-element-one.html">
-  <link rel="lazy-import" group="gryffindor" href="demo-element-two.html">
+  <link rel="lazy-import" group="gryffindor" href="../demo/demo-element-one.html">
+  <link rel="lazy-import" group="gryffindor" href="../demo/demo-element-two.html">
+  <link rel="lazy-import" group="slytherin" href="../demo/demo-element-three.html">
   <template>
     <div>
       <intermediate-element></intermediate-element>
@@ -13,8 +14,11 @@
   <script>
     Polymer({
       is: 'high-level-element',
-      attached() {
-        this.domain = 'hogwarts';
+      properties: {
+        domain: {
+          type: String,
+          value: 'hogwarts'
+        }
       },
       behaviors: [
         mtz.LazyImportsHandlerBehavior

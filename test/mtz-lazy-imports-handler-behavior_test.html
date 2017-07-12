@@ -163,8 +163,6 @@
         });
 
         describe('dom node integration tests', () => {
-          const event = createEvent('gryffindor', 'hogwarts');
-
           beforeEach((done) => {
             parent.removeChild(element);
             flush(() => {
@@ -176,10 +174,20 @@
           });
 
           it('should import once if the same import is on ancestor nodes', () => {
+            const event = createEvent('gryffindor', 'hogwarts');
             sinon.spy(event, 'stopImmediatePropagation');
             child.dispatchEvent(event);
             expect(event.stopImmediatePropagation).to.be.called;
             expect(child._importLazyGroup).not.to.be.called;
+            expect(element._importLazyGroup).to.be.calledWithMatch(event);
+          });
+
+          it('should import twice if different imports are on ancestor nodes', () => {
+            const event = createEvent('slytherin', 'hogwarts');
+            sinon.spy(event, 'stopImmediatePropagation');
+            child.dispatchEvent(event);
+            expect(event.stopImmediatePropagation).to.be.calledTwice;
+            expect(child._importLazyGroup).to.be.called;
             expect(element._importLazyGroup).to.be.calledWithMatch(event);
           });
         });

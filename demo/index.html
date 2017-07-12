@@ -31,40 +31,66 @@
             <script>
               Polymer({
                 is: 'hogwarts-castle',
+                properties: {
+                  // Register your desired domain
+                  domain: {
+                    type: String,
+                    value: 'hogwarts'
+                  }
+                },
                 behaviors: [
                   // Register the behavior
                   mtz.LazyImportsHandlerBehavior
-                ],
-                ready() {
-                  // Register your desired domain
-                  this.domain = 'hogwarts';
-                }
+                ]
               });
             </script>
           </dom-module>
 
           <dom-module id="magical-button">
             <link rel="lazy-import" group="gryffindor" href="demo-element-two.html">
+            <link rel="lazy-import" group="slytherin" href="demo-element-three.html">
             <template>
-              <button raised on-click="buttonPressed">Magical Button</button>
+              <button raised on-click="triggerImportOfElementOne">Griffindor Rocks - Import One</button>
+              <button raised on-click="triggerImportOfElementThree">Slytherin Rocks - Import Three</button>
+
               <!-- <demo-element-one> will show because the event is processed by first
               element that handles the provided group with a matching domain. -->
               <demo-element-one></demo-element-one>
 
               <!-- This will not show because event is captured by parent. Even though a
               lazy import is provided with a matching domain and group, the parent takes
-              precedence. -->
+              precedence. If the parent does not handle the specified group in the event,
+              this will be handled by the child handler. -->
               <demo-element-two></demo-element-two>
+
+              <!-- When the slytherin button is pressed, this element shows because it's
+              imported by the handler associated with this button. However, the parent
+              doesn't have this group registered. As a result, the event falls through the
+              parent and is handled by the child. -->
+              <demo-element-three></demo-element-three>
             </template>
             <script>
               Polymer({
                 is: 'magical-button',
+                properties: {
+                  /* The same domain is registered here */
+                  domain: {
+                    type: String,
+                    value: 'hogwarts'
+                  }
+                },
                 behaviors: [
                   mtz.LazyImportsHandlerBehavior
                 ],
-                buttonPressed() {
+                triggerImportOfElementOne() {
                   this.dispatchEvent(new CustomEvent('import-lazy-group', {
                     detail: {group: 'gryffindor', domain: 'hogwarts'},
+                    composed: true
+                  }));
+                },
+                triggerImportOfElementThree() {
+                  this.dispatchEvent(new CustomEvent('import-lazy-group', {
+                    detail: {group: 'slytherin', domain: 'hogwarts'},
                     composed: true
                   }));
                 }
