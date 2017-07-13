@@ -1,0 +1,60 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../lazy-imports/lazy-imports-behavior.html">
+
+<script>
+
+  window.mtz = window.mtz || {};
+
+  /**
+   * `mtz-lazy-imports-handler-behavior`
+   *  Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
+   *  behavior to attempt to import a lazy-group within the provided domain. If it is found then it will
+   *  stop the event propagation. Listens for events on the use-capture event cycle.
+   *
+   * @polymerBehavior mtz.LazyImportsHandlerBehavior
+   * @demo demo/index.html
+   */
+  mtz.LazyImportsHandlerBehaviorImpl = {
+    properties: {
+      /* The domain dictating whether a group can be lazily loaded by this behavior instance */
+      domain: String,
+
+      /* The groups handled by this handler */
+      __groups: Set
+    },
+    ready() {
+      this._importLazyGroup = this._importLazyGroup.bind(this);
+
+      // Gather all groups this element lazily imports
+      this.__groups = new Set(Array.from(
+        Polymer.DomModule.import(this.localName).
+          querySelectorAll(`link[rel=\'lazy-import\'][href]:not([href=\'\']`)).
+        map((link) => link.getAttribute('group') || ''));
+    },
+    attached() {
+      this.addEventListener('import-lazy-group', this._importLazyGroup, true);
+    },
+    detached() {
+      this.removeEventListener('import-lazy-group', this._importLazyGroup, true);
+    },
+
+    /**
+     * Import lazy group provided that the domain of the group matches the registered domain
+     *  of this behavior.
+     * @protected
+     * @param {CustomEvent} event - The event being processed. This event should include a domain
+     * and a group specified in the event.detail property.
+     */
+    _importLazyGroup(event) {
+      const {detail = {}} = event;
+      if (detail && this.__groups.has(detail.group) && detail.domain === this.domain) {
+        event.stopImmediatePropagation();
+        this.importLazyGroup(detail.group);
+      }
+    }
+  };
+
+  /* @polymerBehavior */
+  mtz.LazyImportsHandlerBehavior = [Polymer.LazyImportsBehavior, mtz.LazyImportsHandlerBehaviorImpl];
+
+</script>

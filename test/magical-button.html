@@ -1,0 +1,28 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="magical-button">
+  <template>
+    <button id="importOne" raised on-click="triggerImportOfElementOne">Import One</button>
+    <button id="importThree" raised on-click="triggerImportOfElementThree">Import Three</button>
+    <demo-element-one></demo-element-one>
+    <demo-element-two></demo-element-two>
+    <demo-element-three></demo-element-three>
+  </template>
+  <script>
+    Polymer({
+      is: 'magical-button',
+      triggerImportOfElementOne() {
+        this.dispatchEvent(new CustomEvent('import-lazy-group', {
+          detail: {group: 'gryffindor', domain: 'hogwarts'},
+          composed: true
+        }));
+      },
+      triggerImportOfElementThree() {
+        this.dispatchEvent(new CustomEvent('import-lazy-group', {
+          detail: {group: 'slytherin', domain: 'hogwarts'},
+          composed: true
+        }));
+      }
+    });
+  </script>
+</dom-module>

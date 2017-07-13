@@ -1,0 +1,25 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../demo/magical-button.html">
+<link rel="import" href="../mtz-lazy-imports-handler-behavior.html">
+
+<dom-module id="intermediate-element">
+  <link rel="lazy-import" group="gryffindor" href="../demo/demo-element-two.html">
+  <link rel="lazy-import" group="slytherin" href="../demo/demo-element-three.html">
+  <template>
+    <magical-button>Magical Button</magical-button>
+  </template>
+  <script>
+    Polymer({
+      is: 'intermediate-element',
+      properties: {
+        domain: {
+          type: String,
+          value: 'hogwarts'
+        }
+      },
+      behaviors: [
+        mtz.LazyImportsHandlerBehavior
+      ]
+    });
+  </script>
+</dom-module>
