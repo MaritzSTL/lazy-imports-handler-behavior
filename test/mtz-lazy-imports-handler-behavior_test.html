@@ -54,6 +54,14 @@
         describe('ready()', () => {
           it('should locate dom module links and add them to groups property', () => {
             expect(element.__groups.has('gryffindor')).to.equal(true);
+            expect(child.__groups.has('gryffindor')).to.equal(true);
+            expect(child.__groups.has('slytherin')).to.equal(true);
+          });
+          it('should associate one group with the element', () => {
+            expect(element.__groups.size).to.equal(1);
+          });
+          it('should associate two groups with the child', () => {
+            expect(child.__groups.size).to.equal(2);
           });
         });
 

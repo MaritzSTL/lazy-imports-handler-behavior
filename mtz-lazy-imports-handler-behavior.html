@@ -26,16 +26,10 @@
       this._importLazyGroup = this._importLazyGroup.bind(this);
 
       // Gather all groups this element lazily imports
-      const thisDomModule = Polymer.DomModule.import(this.localName);
-      let groups = new Set();
-      if (thisDomModule) {
-        const links = Array.from(thisDomModule.
-          querySelectorAll(`link[rel=\'lazy-import\'][href]:not([href=\'\']`));
-        groups = new Set(links.map((link) => {
-          return link.getAttribute('group') || '';
-        }));
-      }
-      this.__groups = groups;
+      this.__groups = new Set(Array.from(
+        Polymer.DomModule.import(this.localName).
+          querySelectorAll(`link[rel=\'lazy-import\'][href]:not([href=\'\']`)).
+        map((link) => link.getAttribute('group') || ''));
     },
     attached() {
       this.addEventListener('import-lazy-group', this._importLazyGroup, true);
