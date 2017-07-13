@@ -5,16 +5,16 @@
 
   window.mtz = window.mtz || {};
 
-/**
- * `mtz-lazy-imports-handler-behavior`
- *  Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
- *  behavior to attempt to import a lazy-group within the provided domain. If it is found then it will
- *  stop the event propagation. Listens for events on the use-capture event cycle.
- *
- * @polymerBehavior
- * @demo demo/index.html
- */
-  const LazyImportsHandlerBehaviorImpl = {
+  /**
+   * `mtz-lazy-imports-handler-behavior`
+   *  Pulls in the Polymer.LazyImportsBehavior and listens for an event to tell an instance of this
+   *  behavior to attempt to import a lazy-group within the provided domain. If it is found then it will
+   *  stop the event propagation. Listens for events on the use-capture event cycle.
+   *
+   * @polymerBehavior mtz.LazyImportsHandlerBehavior
+   * @demo demo/index.html
+   */
+  mtz.LazyImportsHandlerBehaviorImpl = {
     properties: {
       /* The domain dictating whether a group can be lazily loaded by this behavior instance */
       domain: String,
@@ -52,9 +52,9 @@
         this.importLazyGroup(detail.group);
       }
     }
-};
+  };
 
-/* @polymerBehavior */
-mtz.LazyImportsHandlerBehavior = [Polymer.LazyImportsBehavior, LazyImportsHandlerBehaviorImpl];
+  /* @polymerBehavior */
+  mtz.LazyImportsHandlerBehavior = [Polymer.LazyImportsBehavior, mtz.LazyImportsHandlerBehaviorImpl];
 
 </script>

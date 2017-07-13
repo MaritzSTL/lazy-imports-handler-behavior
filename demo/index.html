@@ -29,19 +29,21 @@
               <magical-button></magical-button>
             </template>
             <script>
-              Polymer({
-                is: 'hogwarts-castle',
-                properties: {
-                  // Register your desired domain
-                  domain: {
-                    type: String,
-                    value: 'hogwarts'
-                  }
-                },
-                behaviors: [
-                  // Register the behavior
-                  mtz.LazyImportsHandlerBehavior
-                ]
+              window.addEventListener('WebComponentsReady', () => {
+                Polymer({
+                  is: 'hogwarts-castle',
+                  properties: {
+                    // Register your desired domain
+                    domain: {
+                      type: String,
+                      value: 'hogwarts'
+                    }
+                  },
+                  behaviors: [
+                    // Register the behavior
+                    mtz.LazyImportsHandlerBehavior
+                  ]
+                });
               });
             </script>
           </dom-module>
@@ -70,30 +72,32 @@
               <demo-element-three></demo-element-three>
             </template>
             <script>
-              Polymer({
-                is: 'magical-button',
-                properties: {
-                  /* The same domain is registered here */
-                  domain: {
-                    type: String,
-                    value: 'hogwarts'
+              window.addEventListener('WebComponentsReady', () => {
+                Polymer({
+                  is: 'magical-button',
+                  properties: {
+                    /* The same domain is registered here */
+                    domain: {
+                      type: String,
+                      value: 'hogwarts'
+                    }
+                  },
+                  behaviors: [
+                    mtz.LazyImportsHandlerBehavior
+                  ],
+                  triggerImportOfElementOne() {
+                    this.dispatchEvent(new CustomEvent('import-lazy-group', {
+                      detail: {group: 'gryffindor', domain: 'hogwarts'},
+                      composed: true
+                    }));
+                  },
+                  triggerImportOfElementThree() {
+                    this.dispatchEvent(new CustomEvent('import-lazy-group', {
+                      detail: {group: 'slytherin', domain: 'hogwarts'},
+                      composed: true
+                    }));
                   }
-                },
-                behaviors: [
-                  mtz.LazyImportsHandlerBehavior
-                ],
-                triggerImportOfElementOne() {
-                  this.dispatchEvent(new CustomEvent('import-lazy-group', {
-                    detail: {group: 'gryffindor', domain: 'hogwarts'},
-                    composed: true
-                  }));
-                },
-                triggerImportOfElementThree() {
-                  this.dispatchEvent(new CustomEvent('import-lazy-group', {
-                    detail: {group: 'slytherin', domain: 'hogwarts'},
-                    composed: true
-                  }));
-                }
+                });
               });
             </script>
           </dom-module>
